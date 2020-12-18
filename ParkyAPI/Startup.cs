@@ -1,28 +1,20 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using ParkyAPI.Data;
+using ParkyAPI.ParkyMapper;
 using ParkyAPI.Repository;
 using ParkyAPI.Repository.IRepository;
-using AutoMapper;
-using ParkyAPI.ParkyMapper;
-using System.Reflection;
-using System.IO;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 namespace ParkyAPI
@@ -47,6 +39,7 @@ namespace ParkyAPI
             services.AddScoped<ITrailRepository, TrailRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddAutoMapper(typeof(ParkyMappings));
+
             services.AddApiVersioning(options =>
             {
                 options.AssumeDefaultVersionWhenUnspecified = true;
@@ -54,6 +47,7 @@ namespace ParkyAPI
                 options.ReportApiVersions = true;
             });
             services.AddVersionedApiExplorer(options => options.GroupNameFormat = "'v'VVV");
+
             services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
             services.AddSwaggerGen();
 
@@ -68,7 +62,8 @@ namespace ParkyAPI
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
-            .AddJwtBearer(x=> {
+            .AddJwtBearer(x =>
+            {
                 x.RequireHttpsMetadata = false;
                 x.SaveToken = true;
                 x.TokenValidationParameters = new TokenValidationParameters
@@ -139,8 +134,9 @@ namespace ParkyAPI
 
             app.UseHttpsRedirection();
             app.UseSwagger();
-            app.UseSwaggerUI(options => {
-               foreach(var desc in provider.ApiVersionDescriptions)
+            app.UseSwaggerUI(options =>
+            {
+                foreach (var desc in provider.ApiVersionDescriptions)
                     options.SwaggerEndpoint($"/swagger/{desc.GroupName}/swagger.json",
                         desc.GroupName.ToUpperInvariant());
                 options.RoutePrefix = "";
